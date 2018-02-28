@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+## Configures and calls coqproject.sh (https://github.com/dwoos/coqproject)
+
+## Configuration options for coqproject.sh
+DEPS=(Toychain)
+DIRS=(SHA256 Bitcoin)
+CANARIES=("mathcomp.ssreflect.ssreflect" "Bitoychain requires mathcomp to be installed" "Toychain.Forests" "Build Toychain before building Bitoychain")
+NAMESPACE_SHA256="Bitoychain"
+NAMESPACE_Bitcoin="Bitoychain"
+Toychain_DIRS=(Structures Systems Properties)
+source script/coqproject.sh
