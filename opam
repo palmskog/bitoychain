@@ -2,27 +2,20 @@ opam-version: "1.2"
 version: "dev"
 maintainer: "palmskog@gmail.com"
 
-homepage: "https://github.com/certichain/toychain"
-dev-repo: "https://github.com/certichain/toychain.git"
-bug-reports: "https://github.com/certichain/toychain/issues"
-license: "BSD"
+homepage: "https://github.com/palmskog/bitoychain"
+dev-repo: "https://github.com/palmskog/bitoychain.git"
+bug-reports: "https://github.com/palmskog/bitoychain/issues"
+license: "Proprietary"
 
 build: [ make "-j%{jobs}%" ]
-install: [ make "install" ]
-remove: [ "sh" "-c" "rm -rf '%{lib}%/coq/user-contrib/Toychain'" ]
 depends: [
   "coq" {>= "8.7" & < "8.8~"}
-  "coq-mathcomp-ssreflect" {>= "1.6" & < "1.7~"}
-  "htt" {= "dev"}
+  "coq-mathcomp-ssreflect" {>= "1.6.4" & < "1.7~"}
 ]
 
 tags: [
-  "category:Computer Science/Concurrent Systems and Protocols/Theory of concurrent systems"
-  "keyword:program verification"
   "keyword:distributed algorithms"
 ]
 authors: [
-  "Ilya Sergey <>"
-  "George Pirlea <>"
   "Karl Palmskog <>"
 ]
