@@ -9,4 +9,5 @@ CANARIES=("mathcomp.ssreflect.ssreflect" "Bitoychain requires mathcomp to be ins
 NAMESPACE_SHA256="Bitoychain"
 NAMESPACE_Bitcoin="Bitoychain"
 Toychain_DIRS=(Structures Systems Properties)
+ARG="-w -notation-overridden,-local-declaration,-redundant-canonical-projection,-projection-no-head-constant"
 source script/coqproject.sh
