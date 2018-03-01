@@ -5,6 +5,9 @@ From HTT
 Require Import pred prelude idynamic ordtype pcm finmap unionmap heap.
 From Toychain
 Require Import Chains Blocks Forests.
+Require Import ZArith.
+From Bitoychain
+Require Import Zord SHA256.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -12,7 +15,7 @@ Unset Printing Implicit Defensive.
 Module Bitcoin : BLOCKCHAIN.
 
 Definition Timestamp : Type := nat.
-Definition Hash : ordType := [ordType of nat].
+Definition Hash : ordType := [ordType of seq Z].
 
 Definition VProof : eqType := [eqType of nat].
 Definition Transaction : eqType := [eqType of nat].
@@ -20,7 +23,7 @@ Definition Address : finType := [finType of 'I_5].
 
 Definition block := @Block Hash Transaction VProof.
 
-Definition GenesisBlock : block := mkB 0 [::] 0.
+Definition GenesisBlock : block := mkB [:: Z0] [::] 0.
 
 Definition Blockchain := seq block.
 
@@ -28,9 +31,9 @@ Definition BlockTree := union_map Hash block.
 
 Definition TxPool := seq Transaction.
 
-Definition hashT (tx:Transaction) : Hash := 0.
+Definition hashT (tx:Transaction) : Hash := [:: Z0].
 
-Definition hashB (b:block) : Hash := 0.
+Definition hashB (b:block) : Hash := [:: Z0].
 
 Definition genProof (a : Address) (bc :Blockchain) (txs : TxPool) (ts : Timestamp) : option VProof := None.
 
@@ -38,7 +41,7 @@ Definition VAF (vp:VProof) (ts:Timestamp) (bc:Blockchain) (txs:TxPool) : bool :=
   false.
 
 Definition FCR (bc1:Blockchain) (bc2: Blockchain) : bool :=
-  size bc1 > size bc2.
+  gtn (size bc1) (size bc2).
 
 Definition txValid (tx:Transaction) (bc:Blockchain) : bool :=
   true.
@@ -104,5 +107,9 @@ Lemma FCR_trans :
   forall (A B C : Blockchain), A > B -> B > C -> A > C.
 Proof.
 Admitted.
+
+Variable h : Hash.
+
+Check SHA_256 h.
 
 End Bitcoin.
