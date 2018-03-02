@@ -88,34 +88,30 @@ Definition GenesisBlockTx_locktime_str :=
 Definition GenesisBlockTx_locktime :=
  hexstring_to_Zlist GenesisBlockTx_locktime_str.
 
-Definition GenesisBlockTxIn_hashdata := GenesisBlockTxIn_n ++ GenesisBlockTxIn_prevout_hash ++ GenesisBlockTxIn_prevout_n ++ GenesisBlockTxIn_scriptsig ++ GenesisBlockTxIn_sequence.
-Definition GenesisBlockTxOut_hashdata := GenesisBlockTxOut_n ++ GenesisBlockTxOut_value ++ GenesisBlockTxOut_scriptpubkey.
+Definition GenesisBlockTxIn_hashdata :=
+ GenesisBlockTxIn_n ++ GenesisBlockTxIn_prevout_hash ++ GenesisBlockTxIn_prevout_n ++ GenesisBlockTxIn_scriptsig ++ GenesisBlockTxIn_sequence.
+Definition GenesisBlockTxOut_hashdata :=
+ GenesisBlockTxOut_n ++ GenesisBlockTxOut_value ++ GenesisBlockTxOut_scriptpubkey.
 
 Definition GenesisBlockTx_hashdata :=
-  GenesisBlockTx_version ++ GenesisBlockTxIn_hashdata ++ GenesisBlockTxOut_hashdata ++ GenesisBlockTx_locktime.
+ GenesisBlockTx_version ++ GenesisBlockTxIn_hashdata ++ GenesisBlockTxOut_hashdata ++ GenesisBlockTx_locktime.
 
 Definition GenesisBlockTx_SHA_256_once := SHA_256' GenesisBlockTx_hashdata.
 
 Definition GenesisBlockTx_SHA_256_twice := SHA_256' GenesisBlockTx_SHA_256_once.
 
-Definition GenesisBlockTx_hashed := rev (SHA_256' (SHA_256' GenesisBlockTx_hashdata)).
+Definition GenesisBlockTx_hashed_rev := rev (SHA_256' (SHA_256' GenesisBlockTx_hashdata)).
+Definition GenesisBlockTx_hashed := SHA_256' (SHA_256' GenesisBlockTx_hashdata).
 
-Lemma check_computed_once_hash :
+Lemma checkTx_computed_once_hash :
   listZ_eq GenesisBlockTx_SHA_256_once (hexstring_to_Zlist "27362e66e032c731c1c8519f43063fe0e5d070db1c0c3552bb04afa18a31c6bf").
 Proof.
 vm_compute.
 reflexivity.
 Qed.
 
-Lemma check_computed_twice_hash : 
+Lemma checkTx_computed_twice_hash : 
   listZ_eq GenesisBlockTx_SHA_256_twice (hexstring_to_Zlist "3ba3edfd7a7b12b27ac72c3e67768f617fc81bc3888a51323a9fb8aa4b1e5e4a").
-Proof.
-vm_compute.
-reflexivity.
-Qed.
-
-Lemma check_hashed : 
-  listZ_eq GenesisBlockTx_hashed (hexstring_to_Zlist "4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b").
 Proof.
 vm_compute.
 reflexivity.
@@ -127,32 +123,68 @@ Definition GenesisBlockPr_hash_merkle_root_str :=
 Definition GenesisBlockPr_hash_merkle_root :=
  hexstring_to_Zlist GenesisBlockPr_hash_merkle_root_str.
 
+Lemma checkTx_hashed : 
+  listZ_eq GenesisBlockTx_hashed (rev (hexstring_to_Zlist GenesisBlockPr_hash_merkle_root_str)).
+Proof.
+vm_compute.
+reflexivity.
+Qed.
+
 Definition GenesisBlockPr_version_str :=
  "01000000".
 
 Definition GenesisBlockPr_version :=
  hexstring_to_Zlist GenesisBlockPr_version_str.
 
+Definition GenesisBlock_hashPrevBlock_str :=
+ "0000000000000000000000000000000000000000000000000000000000000000".
+
+Definition GenesisBlock_hashPrevBlock :=
+ hexstring_to_Zlist GenesisBlock_hashPrevBlock_str.
+
 Definition GenesisBlockPr_time_str :=
-  "495FAB29". (* 1231006505 *)
+  "29ab5f49". (* 1231006505 *)
+(*  "495fab29". *)  
 
 Definition GenesisBlockPr_time :=
  hexstring_to_Zlist GenesisBlockPr_time_str.
 
-Definition GenesisBlockPr_nonce_str :=
- "7C2BAC1D". (* 2083236893 *)
-
-Definition GenesisBlockPr_nonce :=
- hexstring_to_Zlist GenesisBlockPr_nonce_str.
-
 Definition GenesisBlockPr_bits_str :=
- "1D00FFFF". (* 486604799 *)
+  "ffff001d". (* 486604799 *)
+(*  "1d00ffff". *)
 
 Definition GenesisBlockPr_bits :=
  hexstring_to_Zlist GenesisBlockPr_bits_str.
 
+Definition GenesisBlockPr_nonce_str :=
+ "1dac2b7c". (* 2083236893 *)
+(* "7c2bac1d".*)
+
+Definition GenesisBlockPr_nonce :=
+ hexstring_to_Zlist GenesisBlockPr_nonce_str.
+
+Definition GenesisBlock_hashdata :=
+  GenesisBlockPr_version ++ GenesisBlock_hashPrevBlock ++ GenesisBlockTx_hashed ++
+  GenesisBlockPr_time ++ GenesisBlockPr_bits ++ GenesisBlockPr_nonce.
+
+Definition GenesisBlock_hash_str :=
+ "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f".
+
 Definition GenesisBlock_hash :=
- hexstring_to_Zlist "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f".
+  rev (hexstring_to_Zlist GenesisBlock_hash_str).
+
+Definition GenesisBlock_SHA_256_once := SHA_256' GenesisBlock_hashdata.
+
+Definition GenesisBlock_SHA_256_twice := SHA_256' GenesisBlock_SHA_256_once.
+
+Definition GenesisBlock_hashed := SHA_256' (SHA_256' GenesisBlock_hashdata).
+
+Lemma checkBlock_hashed : 
+  listZ_eq (rev GenesisBlock_hashed) (hexstring_to_Zlist GenesisBlock_hash_str).
+Proof.
+vm_compute.
+reflexivity.
+Qed.
 
 End GenesisBlockConstants.
 
@@ -166,8 +198,8 @@ Definition Hash : ordType := [ordType of seq Z].
 Record Pr :=
   mkPr { proof_version : seq Z;
          proof_time : Timestamp;
-         proof_nonce : seq Z;
-         proof_bits : seq Z
+         proof_bits : seq Z;
+         proof_nonce : seq Z
        }.
 
 Definition eq_Pr (p p' : Pr) :=
@@ -325,12 +357,12 @@ Definition hashdataTx (tx : Transaction) : Hash :=
   tx_locktime tx.
 
 Definition hashT (tx:Transaction) : Hash :=
-  rev (SHA_256' (SHA_256' (hashdataTx tx))).
+  SHA_256' (SHA_256' (hashdataTx tx)).
 
 (*
 Open Scope string_scope.
 Lemma hashT_GenesisBlock_eq :
-  listZ_eq (hashT GenesisBlockTx) (hexstring_to_Zlist "4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b").
+  listZ_eq (hashT GenesisBlockTx) (rev (hexstring_to_Zlist "4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b")).
 Proof.
 vm_compute.
 reflexivity.
