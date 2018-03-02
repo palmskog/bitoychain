@@ -28,37 +28,130 @@ Section GenesisBlockConstants.
 
 Open Scope string_scope.
 
-Definition GenesisBlockTxOutN :=
- hexstring_to_Zlist "00".
+Definition GenesisBlockTx_version_str :=
+ "01000000".
 
-Definition GenesisBlockTxOutValue :=
- hexstring_to_Zlist "12A05F200". (* 5000000000 *)
+Definition GenesisBlockTx_version :=
+ hexstring_to_Zlist GenesisBlockTx_version_str.
 
-Definition GenesisBlockTxOutScriptpubkey :=
- hexstring_to_Zlist "4104678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5fac".
+Definition GenesisBlockTxIn_n_str :=
+ "01".
 
-Definition GenesisBlockTxVersion :=
- hexstring_to_Zlist "01".
+Definition GenesisBlockTxIn_n :=
+ hexstring_to_Zlist GenesisBlockTxIn_n_str.
 
-Definition GenesisBlockTxLockTime :=
- hexstring_to_Zlist "00".
+Definition GenesisBlockTxIn_prevout_hash_str :=
+ "0000000000000000000000000000000000000000000000000000000000000000".
 
-Definition GenesisBlockHashMerkelRoot :=
- hexstring_to_Zlist "4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b".
+Definition GenesisBlockTxIn_prevout_hash :=
+ hexstring_to_Zlist GenesisBlockTxIn_prevout_hash_str.
 
-Definition GenesisBlockVersion :=
- hexstring_to_Zlist "01".
+Definition GenesisBlockTxIn_prevout_n_str :=
+ "ffffffff".
 
-Definition GenesisBlockTimestamp :=
- hexstring_to_Zlist "495FAB29". (* 1231006505 *)
+Definition GenesisBlockTxIn_prevout_n :=
+ hexstring_to_Zlist GenesisBlockTxIn_prevout_n_str.
 
-Definition GenesisBlockNonce :=
- hexstring_to_Zlist "7C2BAC1D". (* 2083236893 *)
+Definition GenesisBlockTxIn_scriptsig_str :=
+ "4d04ffff001d0104455468652054696d65732030332f4a616e2f32303039204368616e63656c6c6f72206f6e206272696e6b206f66207365636f6e64206261696c6f757420666f722062616e6b73".
 
-Definition GenesisBlockBits :=
- hexstring_to_Zlist "1D00FFFF". (* 486604799 *)
+Definition GenesisBlockTxIn_scriptsig :=
+ hexstring_to_Zlist GenesisBlockTxIn_scriptsig_str.
 
-Definition GenesisBlockHash :=
+Definition GenesisBlockTxIn_sequence_str :=
+ "ffffffff".
+
+Definition GenesisBlockTxIn_sequence :=
+ hexstring_to_Zlist GenesisBlockTxIn_sequence_str.
+
+Definition GenesisBlockTxOut_n_str :=
+ "01".
+
+Definition GenesisBlockTxOut_n :=
+ hexstring_to_Zlist GenesisBlockTxOut_n_str.
+
+Definition GenesisBlockTxOut_value_str :=
+ "00f2052a01000000". (* 5000000000 *)
+
+Definition GenesisBlockTxOut_value :=
+ hexstring_to_Zlist GenesisBlockTxOut_value_str.
+
+Definition GenesisBlockTxOut_scriptpubkey_str :=
+ "434104678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5fac".
+
+Definition GenesisBlockTxOut_scriptpubkey :=
+ hexstring_to_Zlist GenesisBlockTxOut_scriptpubkey_str.
+
+Definition GenesisBlockTx_locktime_str :=
+ "00000000".
+
+Definition GenesisBlockTx_locktime :=
+ hexstring_to_Zlist GenesisBlockTx_locktime_str.
+
+Definition GenesisBlockTxIn_hashdata := GenesisBlockTxIn_n ++ GenesisBlockTxIn_prevout_hash ++ GenesisBlockTxIn_prevout_n ++ GenesisBlockTxIn_scriptsig ++ GenesisBlockTxIn_sequence.
+Definition GenesisBlockTxOut_hashdata := GenesisBlockTxOut_n ++ GenesisBlockTxOut_value ++ GenesisBlockTxOut_scriptpubkey.
+
+Definition GenesisBlockTx_hashdata :=
+  GenesisBlockTx_version ++ GenesisBlockTxIn_hashdata ++ GenesisBlockTxOut_hashdata ++ GenesisBlockTx_locktime.
+
+Definition GenesisBlockTx_SHA_256_once := SHA_256' GenesisBlockTx_hashdata.
+
+Definition GenesisBlockTx_SHA_256_twice := SHA_256' GenesisBlockTx_SHA_256_once.
+
+Definition GenesisBlockTx_hashed := rev (SHA_256' (SHA_256' GenesisBlockTx_hashdata)).
+
+Lemma check_computed_once_hash :
+  listZ_eq GenesisBlockTx_SHA_256_once (hexstring_to_Zlist "27362e66e032c731c1c8519f43063fe0e5d070db1c0c3552bb04afa18a31c6bf").
+Proof.
+vm_compute.
+reflexivity.
+Qed.
+
+Lemma check_computed_twice_hash : 
+  listZ_eq GenesisBlockTx_SHA_256_twice (hexstring_to_Zlist "3ba3edfd7a7b12b27ac72c3e67768f617fc81bc3888a51323a9fb8aa4b1e5e4a").
+Proof.
+vm_compute.
+reflexivity.
+Qed.
+
+Lemma check_hashed : 
+  listZ_eq GenesisBlockTx_hashed (hexstring_to_Zlist "4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b").
+Proof.
+vm_compute.
+reflexivity.
+Qed.
+
+Definition GenesisBlockPr_hash_merkle_root_str :=
+ "4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b".
+
+Definition GenesisBlockPr_hash_merkle_root :=
+ hexstring_to_Zlist GenesisBlockPr_hash_merkle_root_str.
+
+Definition GenesisBlockPr_version_str :=
+ "01000000".
+
+Definition GenesisBlockPr_version :=
+ hexstring_to_Zlist GenesisBlockPr_version_str.
+
+Definition GenesisBlockPr_time_str :=
+  "495FAB29". (* 1231006505 *)
+
+Definition GenesisBlockPr_time :=
+ hexstring_to_Zlist GenesisBlockPr_time_str.
+
+Definition GenesisBlockPr_nonce_str :=
+ "7C2BAC1D". (* 2083236893 *)
+
+Definition GenesisBlockPr_nonce :=
+ hexstring_to_Zlist GenesisBlockPr_nonce_str.
+
+Definition GenesisBlockPr_bits_str :=
+ "1D00FFFF". (* 486604799 *)
+
+Definition GenesisBlockPr_bits :=
+ hexstring_to_Zlist GenesisBlockPr_bits_str.
+
+Definition GenesisBlock_hash :=
  hexstring_to_Zlist "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f".
 
 End GenesisBlockConstants.
@@ -70,7 +163,12 @@ Open Scope Z_scope.
 Definition Timestamp : Type := seq Z.
 Definition Hash : ordType := [ordType of seq Z].
 
-Inductive Pr := mkPr (version : seq Z) (ts : Timestamp) (nonce : seq Z) (bits : seq Z).
+Record Pr :=
+  mkPr { proof_version : seq Z;
+         proof_time : Timestamp;
+         proof_nonce : seq Z;
+         proof_bits : seq Z
+       }.
 
 Definition eq_Pr (p p' : Pr) :=
 match p, p' with
@@ -95,8 +193,14 @@ Qed.
 Definition Pr_eqMixin := EqMixin eq_PrP.
 Canonical Pr_eqType := Eval hnf in EqType Pr Pr_eqMixin.
 
-Inductive txIn :=
- mkTxIn (n : seq Z) (prevout_hash : seq Z) (prevout_n : seq Z) (scriptsig : seq Z) (sequence : seq Z).
+Record txIn :=
+  mkTxIn
+    { in_n : seq Z;
+      in_prevout_hash : seq Z;
+      in_prevout_n : seq Z;
+      in_scriptsig : seq Z;
+      in_sequence : seq Z
+    }.
 
 Definition eq_txIn (ti ti' : txIn) :=
 match ti, ti' with
@@ -124,7 +228,11 @@ Definition txIn_eqMixin := EqMixin eq_txInP.
 Canonical txIn_eqType := Eval hnf in EqType txIn txIn_eqMixin.
 
 Inductive txOut :=
- mkTxOut (n : seq Z) (value : seq Z) (scriptpubkey : seq Z).
+  mkTxOut
+    { out_n : seq Z;
+      out_value : seq Z;
+      out_scriptpubkey : seq Z
+    }.
 
 Definition eq_txOut (ti ti' : txOut) :=
 match ti, ti' with
@@ -148,7 +256,12 @@ Definition txOut_eqMixin := EqMixin eq_txOutP.
 Canonical txOut_eqType := Eval hnf in EqType txOut txOut_eqMixin.
 
 Inductive Tx :=
- mkTx (version : seq Z) (locktime : seq Z) (ins : seq txIn) (outs : seq txOut).
+  mkTx
+    { tx_version : seq Z;
+      tx_ins : seq txIn;
+      tx_outs : seq txOut;
+      tx_locktime : seq Z
+    }.
 
 Definition eq_Tx (tx tx' : Tx) :=
 match tx, tx' with
@@ -179,16 +292,19 @@ Definition Address : finType := [finType of 'I_5].
 
 Definition block := @Block Hash Transaction VProof.
 
+Definition GenesisBlockTxIn :=
+ mkTxIn GenesisBlockTxIn_n GenesisBlockTxIn_prevout_hash GenesisBlockTxIn_prevout_n GenesisBlockTxIn_scriptsig GenesisBlockTxIn_sequence.
+
 Definition GenesisBlockTxOut :=
- mkTxOut GenesisBlockTxOutN GenesisBlockTxOutValue GenesisBlockTxOutScriptpubkey.
+ mkTxOut GenesisBlockTxOut_n GenesisBlockTxOut_value GenesisBlockTxOut_scriptpubkey.
 
 Definition GenesisBlockTx :=
- mkTx GenesisBlockTxVersion GenesisBlockTxLockTime [::] [:: GenesisBlockTxOut].
+ mkTx GenesisBlockTx_version [:: GenesisBlockTxIn] [:: GenesisBlockTxOut] GenesisBlockTx_locktime.
 
 Definition GenesisBlockPr :=
- mkPr GenesisBlockVersion GenesisBlockTimestamp GenesisBlockNonce GenesisBlockBits.
+  mkPr GenesisBlockPr_version GenesisBlockPr_time GenesisBlockPr_nonce GenesisBlockPr_bits.
 
-Definition GenesisBlock : block := mkB GenesisBlockHash [:: GenesisBlockTx] GenesisBlockPr.
+Definition GenesisBlock : block := mkB GenesisBlock_hash [:: GenesisBlockTx] GenesisBlockPr.
 
 Definition Blockchain := seq block.
 
@@ -196,7 +312,30 @@ Definition BlockTree := union_map Hash block.
 
 Definition TxPool := seq Transaction.
 
-Definition hashT (tx:Transaction) : Hash := [:: Z0].
+Definition hashdataTxIn (ti: txIn) : Hash :=
+ in_n ti ++ in_prevout_hash ti ++ in_prevout_n ti ++ in_scriptsig ti ++ in_sequence ti.
+
+Definition hashdataTxOut (to: txOut) : Hash :=
+ out_n to ++ out_value to ++ out_scriptpubkey to.
+
+Definition hashdataTx (tx : Transaction) : Hash :=
+  tx_version tx ++
+  foldl (fun s i => s ++ hashdataTxIn i) [::] (tx_ins tx) ++
+  foldl (fun s i => s ++ hashdataTxOut i) [::] (tx_outs tx) ++
+  tx_locktime tx.
+
+Definition hashT (tx:Transaction) : Hash :=
+  rev (SHA_256' (SHA_256' (hashdataTx tx))).
+
+(*
+Open Scope string_scope.
+Lemma hashT_GenesisBlock_eq :
+  listZ_eq (hashT GenesisBlockTx) (hexstring_to_Zlist "4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b").
+Proof.
+vm_compute.
+reflexivity.
+Qed.
+*)
 
 Definition hashB (b:block) : Hash :=
   if b == GenesisBlock then prevBlockHash b else [:: Z0].
