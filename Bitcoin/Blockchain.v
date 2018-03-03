@@ -1,5 +1,5 @@
 From mathcomp.ssreflect
-Require Import ssreflect ssrbool ssrnat eqtype ssrfun seq fintype path.
+Require Import ssreflect ssrbool ssrnat eqtype ssrfun seq fintype path prime.
 Require Import Eqdep.
 From HTT
 Require Import pred prelude idynamic ordtype pcm finmap unionmap heap.
@@ -14,7 +14,6 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 (* https://en.bitcoin.it/wiki/Block_hashing_algorithm *)
-(* http://blockexplorer.com/block/00000000000000001e8d6829a8a21adc5d38d0a473b144b6765798e61f98bd1d *)
 (* https://blockexplorer.com/block/000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f *)
 (* https://bitcoin.stackexchange.com/questions/2859/how-are-transaction-hashes-calculated *)
 (* https://grisha.org/blog/2017/10/10/postgre-as-a-full-node/ *)
@@ -188,9 +187,72 @@ Qed.
 
 End GenesisBlockConstants.
 
+(* http://blockexplorer.com/block/00000000000000001e8d6829a8a21adc5d38d0a473b144b6765798e61f98bd1d *)
+
+Section ExampleBlock.
+
+Open Scope string_scope.
+
+Definition ExampleBlock_tx0_hash_str :=
+ "51d37bdd871c9e1f4d5541be67a6ab625e32028744d7d4609d0c37747b40cd2d".
+
+Definition ExampleBlock_tx0_hash :=
+ rev (hexstring_to_Zlist ExampleBlock_tx0_hash_str).
+
+Definition ExampleBlock_tx1_hash_str :=
+ "60c25dda8d41f8d3d7d5c6249e2ea1b05a25bf7ae2ad6d904b512b31f997e1a1".
+
+Definition ExampleBlock_tx1_hash :=
+ rev (hexstring_to_Zlist ExampleBlock_tx1_hash_str).
+
+Definition ExampleBlock_tx2_hash_str :=
+ "01f314cdd8566d3e5dbdd97de2d9fbfbfd6873e916a00d48758282cbb81a45b9".
+
+Definition ExampleBlock_tx2_hash :=
+ rev (hexstring_to_Zlist ExampleBlock_tx2_hash_str).
+
+Definition ExampleBlock_tx3_hash_str :=
+ "b519286a1040da6ad83c783eb2872659eaf57b1bec088e614776ffe7dc8f6d01".
+
+Definition ExampleBlock_tx3_hash :=
+ rev (hexstring_to_Zlist ExampleBlock_tx3_hash_str).
+
+Definition ExampleBlock_tx0_tx1_hash_str :=
+  ExampleBlock_tx0_hash ++ ExampleBlock_tx1_hash.
+
+Definition ExampleBlock_tx0_tx1_hash :=
+  SHA_256' (SHA_256' ExampleBlock_tx0_tx1_hash_str).
+
+Definition ExampleBlock_tx2_tx3_hash_str :=
+  ExampleBlock_tx2_hash ++ ExampleBlock_tx3_hash.
+
+Definition ExampleBlock_tx2_tx3_hash :=
+  SHA_256' (SHA_256' ExampleBlock_tx2_tx3_hash_str).
+
+Definition ExampleBlock_tx01_tx23_hash_str :=
+  ExampleBlock_tx0_tx1_hash ++ ExampleBlock_tx2_tx3_hash.
+
+Definition ExampleBlock_tx01_tx23_hash :=
+  SHA_256' (SHA_256' ExampleBlock_tx01_tx23_hash_str).
+
+Definition ExampleBlock_hash_merkle_root_str :=
+  "2b12fcf1b09288fcaff797d71e950e71ae42b91e8bdb2304758dfcffc2b620e3".
+
+Definition ExampleBlock_hash_merkle_root_hash :=
+  rev (hexstring_to_Zlist ExampleBlock_hash_merkle_root_str).
+
+Lemma ExampleBlock_hash_check :
+  listZ_eq ExampleBlock_tx01_tx23_hash ExampleBlock_hash_merkle_root_hash.
+Proof.
+vm_compute.
+reflexivity.
+Qed.
+
+End ExampleBlock.
+
 Module Bitcoin : BLOCKCHAIN.
 
-Open Scope Z_scope.
+(*Open Scope Z_scope.*)
 
 Definition Timestamp : Type := seq Z.
 Definition Hash : ordType := [ordType of seq Z].
@@ -334,9 +396,10 @@ Definition GenesisBlockTx :=
  mkTx GenesisBlockTx_version [:: GenesisBlockTxIn] [:: GenesisBlockTxOut] GenesisBlockTx_locktime.
 
 Definition GenesisBlockPr :=
-  mkPr GenesisBlockPr_version GenesisBlockPr_time GenesisBlockPr_nonce GenesisBlockPr_bits.
+  mkPr GenesisBlockPr_version GenesisBlockPr_time GenesisBlockPr_bits GenesisBlockPr_nonce.
 
 Definition GenesisBlock : block := mkB GenesisBlock_hash [:: GenesisBlockTx] GenesisBlockPr.
+Definition GenesisBlock' : block := mkB GenesisBlock_hashPrevBlock [:: GenesisBlockTx] GenesisBlockPr.
 
 Definition Blockchain := seq block.
 
@@ -344,20 +407,20 @@ Definition BlockTree := union_map Hash block.
 
 Definition TxPool := seq Transaction.
 
-Definition hashdataTxIn (ti: txIn) : Hash :=
+Definition hashdataTxIn (ti: txIn) : seq Z :=
  in_n ti ++ in_prevout_hash ti ++ in_prevout_n ti ++ in_scriptsig ti ++ in_sequence ti.
 
-Definition hashdataTxOut (to: txOut) : Hash :=
+Definition hashdataTxOut (to: txOut) : seq Z :=
  out_n to ++ out_value to ++ out_scriptpubkey to.
 
-Definition hashdataTx (tx : Transaction) : Hash :=
+Definition hashdataT (tx : Transaction) : seq Z :=
   tx_version tx ++
   foldl (fun s i => s ++ hashdataTxIn i) [::] (tx_ins tx) ++
   foldl (fun s i => s ++ hashdataTxOut i) [::] (tx_outs tx) ++
   tx_locktime tx.
 
 Definition hashT (tx:Transaction) : Hash :=
-  SHA_256' (SHA_256' (hashdataTx tx)).
+  SHA_256' (SHA_256' (hashdataT tx)).
 
 (*
 Open Scope string_scope.
@@ -369,8 +432,59 @@ reflexivity.
 Qed.
 *)
 
+(* trunc_log p m == the largest e such that p ^ e <= m, or 0 if p or m is 0. *)
+
+Definition ceil_log2 (n : nat) :=
+  let lg := trunc_log 2 n in
+  if n == 2 ^ lg then lg else lg.+1.
+
+Fixpoint merkle_tree_pass (hs : seq Hash) : seq Hash :=
+match hs with
+| [::] => [::]
+| [:: h] => [:: SHA_256' (SHA_256' (h ++ h))]
+| [:: h1, h2 & hs'] => SHA_256' (SHA_256' (h1 ++ h2)) :: merkle_tree_pass hs'
+end.
+
+Fixpoint merkle_tree_hash (txs : seq Transaction) : Hash :=
+let fix loop hs k : Hash :=
+ match k with
+ | 0 =>
+   match hs with
+   | [:: h] => h
+   | _ => [::]
+   end
+ | k'.+1 =>
+   loop (merkle_tree_pass hs) k'
+end in
+let hs := map hashT txs in
+let passes := ceil_log2 (size hs) in
+loop hs passes.
+
+Definition hashdataB (b : block) : seq Z :=
+  proof_version (proof b) ++
+  prevBlockHash b ++
+  merkle_tree_hash (txs b) ++
+  proof_time (proof b) ++
+  proof_bits (proof b) ++
+  proof_nonce (proof b).
+
+Lemma merkle_tree_eq :
+  listZ_eq (merkle_tree_hash (txs GenesisBlock')) GenesisBlockTx_hashed.
+Proof.
+vm_compute.
+reflexivity.
+Qed.
+
+Lemma hashB_GenesisBlock_eq :
+  listZ_eq (SHA_256' (SHA_256' (hashdataB GenesisBlock'))) GenesisBlock_hash.
+Proof.
+vm_compute.
+reflexivity.
+Qed.
+
 Definition hashB (b:block) : Hash :=
-  if b == GenesisBlock then prevBlockHash b else [:: Z0].
+  if b == GenesisBlock then prevBlockHash b
+  else SHA_256' (SHA_256' (hashdataB b)).
 
 Definition genProof (a : Address) (bc :Blockchain) (txs : TxPool) (ts : Timestamp) : option VProof := None.
 
