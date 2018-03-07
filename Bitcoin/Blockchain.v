@@ -193,47 +193,59 @@ Section ExampleBlock.
 
 Open Scope string_scope.
 
-Definition ExampleBlock_tx0_hash_str :=
+Definition ExampleBlockPr_version_str :=
+ "01000000".
+
+Definition ExampleBlockPr_version :=
+ hexstring_to_Zlist ExampleBlockPr_version_str.
+
+Definition ExampleBlock_prevBlockHash_str :=
+ "00000000000008a3a41b85b8b29ad444def299fee21793cd8b9e567eab02cd81".
+
+Definition ExampleBlock_hashPrevBlock :=
+ rev (hexstring_to_Zlist GenesisBlock_hashPrevBlock_str).
+
+Definition ExampleBlock_Tx0_hash_str :=
  "51d37bdd871c9e1f4d5541be67a6ab625e32028744d7d4609d0c37747b40cd2d".
 
-Definition ExampleBlock_tx0_hash :=
- rev (hexstring_to_Zlist ExampleBlock_tx0_hash_str).
+Definition ExampleBlock_Tx0_hash :=
+ rev (hexstring_to_Zlist ExampleBlock_Tx0_hash_str).
 
-Definition ExampleBlock_tx1_hash_str :=
+Definition ExampleBlock_Tx1_hash_str :=
  "60c25dda8d41f8d3d7d5c6249e2ea1b05a25bf7ae2ad6d904b512b31f997e1a1".
 
-Definition ExampleBlock_tx1_hash :=
- rev (hexstring_to_Zlist ExampleBlock_tx1_hash_str).
+Definition ExampleBlock_Tx1_hash :=
+ rev (hexstring_to_Zlist ExampleBlock_Tx1_hash_str).
 
-Definition ExampleBlock_tx2_hash_str :=
+Definition ExampleBlock_Tx2_hash_str :=
  "01f314cdd8566d3e5dbdd97de2d9fbfbfd6873e916a00d48758282cbb81a45b9".
 
-Definition ExampleBlock_tx2_hash :=
- rev (hexstring_to_Zlist ExampleBlock_tx2_hash_str).
+Definition ExampleBlock_Tx2_hash :=
+ rev (hexstring_to_Zlist ExampleBlock_Tx2_hash_str).
 
-Definition ExampleBlock_tx3_hash_str :=
+Definition ExampleBlock_Tx3_hash_str :=
  "b519286a1040da6ad83c783eb2872659eaf57b1bec088e614776ffe7dc8f6d01".
 
-Definition ExampleBlock_tx3_hash :=
- rev (hexstring_to_Zlist ExampleBlock_tx3_hash_str).
+Definition ExampleBlock_Tx3_hash :=
+ rev (hexstring_to_Zlist ExampleBlock_Tx3_hash_str).
 
-Definition ExampleBlock_tx0_tx1_hash_str :=
-  ExampleBlock_tx0_hash ++ ExampleBlock_tx1_hash.
+Definition ExampleBlock_Tx0_Tx1_hash_str :=
+  ExampleBlock_Tx0_hash ++ ExampleBlock_Tx1_hash.
 
-Definition ExampleBlock_tx0_tx1_hash :=
-  SHA_256' (SHA_256' ExampleBlock_tx0_tx1_hash_str).
+Definition ExampleBlock_Tx0_Tx1_hash :=
+  SHA_256' (SHA_256' ExampleBlock_Tx0_Tx1_hash_str).
 
-Definition ExampleBlock_tx2_tx3_hash_str :=
-  ExampleBlock_tx2_hash ++ ExampleBlock_tx3_hash.
+Definition ExampleBlock_Tx2_Tx3_hash_str :=
+  ExampleBlock_Tx2_hash ++ ExampleBlock_Tx3_hash.
 
-Definition ExampleBlock_tx2_tx3_hash :=
-  SHA_256' (SHA_256' ExampleBlock_tx2_tx3_hash_str).
+Definition ExampleBlock_Tx2_Tx3_hash :=
+  SHA_256' (SHA_256' ExampleBlock_Tx2_Tx3_hash_str).
 
-Definition ExampleBlock_tx01_tx23_hash_str :=
-  ExampleBlock_tx0_tx1_hash ++ ExampleBlock_tx2_tx3_hash.
+Definition ExampleBlock_Tx01_Tx23_hash_str :=
+  ExampleBlock_Tx0_Tx1_hash ++ ExampleBlock_Tx2_Tx3_hash.
 
-Definition ExampleBlock_tx01_tx23_hash :=
-  SHA_256' (SHA_256' ExampleBlock_tx01_tx23_hash_str).
+Definition ExampleBlock_Tx01_Tx23_hash :=
+  SHA_256' (SHA_256' ExampleBlock_Tx01_Tx23_hash_str).
 
 Definition ExampleBlock_hash_merkle_root_str :=
   "2b12fcf1b09288fcaff797d71e950e71ae42b91e8bdb2304758dfcffc2b620e3".
@@ -242,11 +254,20 @@ Definition ExampleBlock_hash_merkle_root_hash :=
   rev (hexstring_to_Zlist ExampleBlock_hash_merkle_root_str).
 
 Lemma ExampleBlock_hash_check :
-  listZ_eq ExampleBlock_tx01_tx23_hash ExampleBlock_hash_merkle_root_hash.
+  listZ_eq ExampleBlock_Tx01_Tx23_hash ExampleBlock_hash_merkle_root_hash.
 Proof.
 vm_compute.
 reflexivity.
 Qed.
+
+Definition ExampleBlockTx0_version_str :=
+ "01000000".
+
+Definition ExampleBlockTx0_version :=
+ hexstring_to_Zlist ExampleBlockTx0_version_str.
+
+Definition ExampleBlockTx0In_n_str :=
+ "01".
 
 End ExampleBlock.
 
