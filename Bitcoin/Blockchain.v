@@ -342,7 +342,7 @@ Qed.
 Definition txIn_eqMixin := EqMixin eq_txInP.
 Canonical txIn_eqType := Eval hnf in EqType txIn txIn_eqMixin.
 
-Inductive txOut :=
+Record txOut :=
   mkTxOut
     { out_n : seq Z;
       out_value : seq Z;
@@ -370,7 +370,7 @@ Qed.
 Definition txOut_eqMixin := EqMixin eq_txOutP.
 Canonical txOut_eqType := Eval hnf in EqType txOut txOut_eqMixin.
 
-Inductive Tx :=
+Record Tx :=
   mkTx
     { tx_version : seq Z;
       tx_ins : seq txIn;
