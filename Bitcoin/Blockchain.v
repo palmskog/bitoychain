@@ -273,7 +273,7 @@ End ExampleBlock.
 
 Module Bitcoin : BLOCKCHAIN.
 
-(*Open Scope Z_scope.*)
+Definition Bitcoin_hash h := SHA_256' (SHA_256' h).
 
 Definition Timestamp : Type := seq Z.
 Definition Hash : ordType := [ordType of seq Z].
@@ -403,6 +403,7 @@ Canonical Tx_eqType := Eval hnf in EqType Tx Tx_eqMixin.
 
 Definition VProof : eqType := [eqType of Pr].
 Definition Transaction : eqType := [eqType of Tx].
+
 Definition Address : finType := [finType of 'I_5].
 
 Definition block := @Block Hash Transaction VProof.
@@ -441,7 +442,7 @@ Definition hashdataT (tx : Transaction) : seq Z :=
   tx_locktime tx.
 
 Definition hashT (tx:Transaction) : Hash :=
-  SHA_256' (SHA_256' (hashdataT tx)).
+  Bitcoin_hash (hashdataT tx).
 
 (*
 Open Scope string_scope.
@@ -462,8 +463,8 @@ Definition ceil_log2 (n : nat) :=
 Fixpoint merkle_tree_pass (hs : seq Hash) : seq Hash :=
 match hs with
 | [::] => [::]
-| [:: h] => [:: SHA_256' (SHA_256' (h ++ h))]
-| [:: h1, h2 & hs'] => SHA_256' (SHA_256' (h1 ++ h2)) :: merkle_tree_pass hs'
+| [:: h] => [:: Bitcoin_hash (h ++ h)]
+| [:: h1, h2 & hs'] => Bitcoin_hash (h1 ++ h2) :: merkle_tree_pass hs'
 end.
 
 Fixpoint merkle_tree_hash (txs : seq Transaction) : Hash :=
@@ -497,7 +498,7 @@ reflexivity.
 Qed.
 
 Lemma hashB_GenesisBlock_eq :
-  listZ_eq (SHA_256' (SHA_256' (hashdataB GenesisBlock'))) GenesisBlock_hash.
+  listZ_eq (Bitcoin_hash (hashdataB GenesisBlock')) GenesisBlock_hash.
 Proof.
 vm_compute.
 reflexivity.
@@ -505,7 +506,7 @@ Qed.
 
 Definition hashB (b:block) : Hash :=
   if b == GenesisBlock then prevBlockHash b
-  else SHA_256' (SHA_256' (hashdataB b)).
+  else Bitcoin_hash (hashdataB b).
 
 Definition genProof (a : Address) (bc :Blockchain) (txs : TxPool) (ts : Timestamp) : option VProof := None.
 
@@ -576,9 +577,5 @@ Lemma FCR_trans :
   forall (A B C : Blockchain), A > B -> B > C -> A > C.
 Proof.
 Admitted.
-
-Variable h : Hash.
-
-Check SHA_256 h.
 
 End Bitcoin.
