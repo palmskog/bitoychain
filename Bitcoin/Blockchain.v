@@ -375,7 +375,7 @@ Record Tx :=
     { tx_version : seq Z;
       tx_ins : seq txIn;
       tx_outs : seq txOut;
-      tx_locktime : seq Z
+      tx_locktime : Timestamp
     }.
 
 Definition eq_Tx (tx tx' : Tx) :=
@@ -437,8 +437,8 @@ Definition hashdataTxOut (to: txOut) : seq Z :=
 
 Definition hashdataT (tx : Transaction) : seq Z :=
   tx_version tx ++
-  foldl (fun s i => s ++ hashdataTxIn i) [::] (tx_ins tx) ++
-  foldl (fun s i => s ++ hashdataTxOut i) [::] (tx_outs tx) ++
+  foldr (fun i s => hashdataTxIn i ++ s) [::] (tx_ins tx) ++
+  foldr (fun o s => hashdataTxOut o ++ s) [::] (tx_outs tx) ++
   tx_locktime tx.
 
 Definition hashT (tx:Transaction) : Hash :=
